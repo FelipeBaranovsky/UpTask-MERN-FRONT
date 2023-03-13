@@ -4,13 +4,15 @@ import useProyectos from "../hooks/useProyectos"
 import Spinner from "../components/Spinner"
 import ModalFormularioTarea from "../components/ModalFormularioTarea"
 import Tarea from "../components/Tarea"
+import ModalEliminarTarea from "../components/ModalEliminarTarea"
+import Alerta from "../components/Alerta"
 
 
 
 const Proyecto = () => {
 
     const params = useParams()
-    const {obtenerProyecto, proyecto, cargando, eliminarProyecto, handleModalTarea} = useProyectos()
+    const {obtenerProyecto, proyecto, cargando, eliminarProyecto, handleModalTarea, alerta} = useProyectos()
 
     useEffect(() => {
         obtenerProyecto(params.id)
@@ -24,6 +26,7 @@ const Proyecto = () => {
     }
 
     const {nombre} = proyecto
+    const {msg} = alerta
 
   return (
     
@@ -62,6 +65,12 @@ const Proyecto = () => {
           </svg>
           Nueva Tarea</button>
           <p className="font-bold text-xl mt-10">Tareas del Proyecto</p>
+          <div className="flex justify-center">
+            <div className="w-full md:w-1/2">
+              {msg && <Alerta alerta={alerta}/>}
+            </div> 
+          </div>
+          
           <div className="bg-white shadow mt-10 rounded-lg">
             {proyecto.tareas?.length ? proyecto.tareas?.map(tarea => (
               <Tarea
@@ -72,6 +81,8 @@ const Proyecto = () => {
             <p className="text-center my-5 p-10">Todavía no hay tareas en este proyecto</p>}
           </div>
             <ModalFormularioTarea/>
+            <ModalEliminarTarea/>
+
       </>
 
     
