@@ -10,9 +10,11 @@ const ProyectosProvider = ({children}) => {
     const [alerta, setAlerta] = useState({})
     const [proyecto, setProyecto] = useState({})
     const [cargando, setCargando] = useState(false)
+    const [cargandoColab, setCargandoColab] = useState(false)
     const [tarea, setTarea] = useState({})
     const [modalFormularioTarea, setModalFormularioTarea] = useState(false)
     const [modalEliminarTarea, setModalEliminarTarea] = useState(false)
+    const [colaborador, setColaborador] = useState({})
 
 
     const navigate = useNavigate()
@@ -130,7 +132,10 @@ const ProyectosProvider = ({children}) => {
             const {data} = await clienteAxios(`/proyectos/${id}`, config) 
             setProyecto(data)
         } catch (error) {
-            console.log(error);
+            setAlerta({
+                msg: error.response.data.msg,
+                error: true
+            })
         } finally {
             setCargando(false)
         }
@@ -282,6 +287,56 @@ const ProyectosProvider = ({children}) => {
         }
     }
 
+    const submitColaborador = async email => {
+        setCargandoColab(true)
+        try {
+            const token = localStorage.getItem('token')
+            if(!token) return
+            const config = {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                }
+            }
+            const {data} = await clienteAxios.post(`/proyectos/colaboradores`, {email}, config) 
+            setColaborador(data)
+        } catch (error) {
+            mostrarAlerta({
+                msg: error.response.data.msg,
+                error: true
+            })
+            setColaborador({})
+        } finally {
+            setCargandoColab(false)
+        }
+
+    }
+
+    const agregarColaborador = async (email) => {
+        try {
+            const token = localStorage.getItem('token')
+            if(!token) return
+            const config = {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                }
+            }
+            const {data} = await clienteAxios.post(`/proyectos/colaboradores/${proyecto._id}`, email, config) 
+            mostrarAlerta({
+                msg: data.msg,
+                error: false
+            }) 
+            setColaborador({})
+        } catch (error) {
+            mostrarAlerta({
+                msg: error.response.data.msg,
+                error: true
+            })
+            setColaborador({})
+        }
+    } 
+
     return (
         <ProyectosContext.Provider
             value={{
@@ -301,7 +356,12 @@ const ProyectosProvider = ({children}) => {
                 tarea,
                 modalEliminarTarea,
                 handleModalEliminarTarea,
-                eliminarTarea
+                eliminarTarea,
+                submitColaborador,
+                colaborador,
+                cargandoColab,
+                agregarColaborador,
+                setAlerta
             }}
         >{children}
         </ProyectosContext.Provider>

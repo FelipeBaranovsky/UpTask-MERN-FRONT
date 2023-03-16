@@ -12,9 +12,10 @@ import Alerta from "../components/Alerta"
 const Proyecto = () => {
 
     const params = useParams()
-    const {obtenerProyecto, proyecto, cargando, eliminarProyecto, handleModalTarea, alerta} = useProyectos()
+    const {obtenerProyecto, proyecto, cargando, eliminarProyecto, handleModalTarea, alerta, setAlerta} = useProyectos()
 
     useEffect(() => {
+        setAlerta({})
         obtenerProyecto(params.id)
 
     }, [])
@@ -80,6 +81,14 @@ const Proyecto = () => {
             )) : 
             <p className="text-center my-5 p-10">Todavía no hay tareas en este proyecto</p>}
           </div>
+          <div className="md:flex justify-between items-center mt-10">
+            <p className="font-bold text-xl">Colaboradores</p>
+            <Link
+              to={`/proyectos/nuevo-colaborador/${proyecto._id}`}
+              className="text-gray-400 hover:text-black uppercase font-bold"
+            >Añadir</Link>
+          </div>
+
             <ModalFormularioTarea/>
             <ModalEliminarTarea/>
 
