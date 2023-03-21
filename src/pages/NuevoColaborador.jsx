@@ -15,7 +15,7 @@ const NuevoColaborador = () => {
   }, [])
 
   if(!proyecto?._id && !cargando && alerta.msg) return <Alerta alerta={alerta}/>
-  
+
   return (
     cargando ? <Spinner/> :
     <>
