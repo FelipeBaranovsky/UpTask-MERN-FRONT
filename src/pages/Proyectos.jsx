@@ -3,10 +3,10 @@ import PreviewProyecto from "../components/PreviewProyecto"
 import Spinner from "../components/Spinner"
 import Alerta from "../components/Alerta"
 
-
 const Proyectos = () => {
 
   const {proyectos, cargando, alerta} = useProyectos()
+  
   const {msg} = alerta
 
   return (

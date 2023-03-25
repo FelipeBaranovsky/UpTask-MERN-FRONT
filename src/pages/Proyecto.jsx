@@ -9,19 +9,51 @@ import ModalEliminarTarea from "../components/ModalEliminarTarea"
 import Alerta from "../components/Alerta"
 import Colaborador from "../components/Colaborador"
 import ModalEliminarColaborador from "../components/ModalEliminarColaborador"
+import io from 'socket.io-client'
 
+let socket;
 
 const Proyecto = () => {
 
     const params = useParams()
-    const {obtenerProyecto, proyecto, cargando, eliminarProyecto, handleModalTarea, alerta, setAlerta} = useProyectos()
+    const {obtenerProyecto, proyecto, cargando, eliminarProyecto, handleModalTarea, alerta, setAlerta, submitTareasProyecto, submitEliminarTareas, submitEditarTareas, submitCambiarEstado} = useProyectos()
     const admin = useAdmin()
 
     useEffect(() => {
         setAlerta({})
         obtenerProyecto(params.id)
-
     }, [])
+
+    //Socket Con
+    useEffect(() => {
+      socket = io(import.meta.env.VITE_BACKEND_URI)
+      socket.emit('abrir proyecto', params.id)
+    }, [])
+
+    //Esperando res
+    useEffect(() => {
+      socket.on('tarea agregada', tareaNueva => {
+        if(tareaNueva.proyecto === proyecto._id){
+          submitTareasProyecto(tareaNueva)
+        }
+      })
+      socket.on('tarea eliminada', tareaEliminada => {
+        if(tareaEliminada.proyecto === proyecto._id){
+          submitEliminarTareas(tareaEliminada)
+        }
+      })
+      socket.on('tarea editada', tareaEditada => {
+        if(tareaEditada.proyecto._id === proyecto._id){
+          submitEditarTareas(tareaEditada)
+        }
+      })
+      socket.on('nuevo estado', nuevoEstadoTarea => {
+        if(nuevoEstadoTarea.proyecto._id === proyecto._id){
+          submitCambiarEstado(nuevoEstadoTarea)
+        }
+      })
+    })
+    
     
     const handleClick = () => {
       if(confirm('Deseas eliminar este proyecto?')){

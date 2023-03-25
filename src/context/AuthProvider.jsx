@@ -39,6 +39,29 @@ const AuthProvider = ({children}) => {
         }
         autenticarUsuario()
     }, [])
+
+    const autenticar = async () => {
+        const token = localStorage.getItem('token')
+        if(!token){
+            return
+        }
+
+        const config = {
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`
+            }
+        }
+
+        try {
+            const {data} = await clienteAxios('/usuarios/perfil', config)
+            setAuth(data)
+            navigate('/proyectos')
+        } catch (error) {
+            console.log(error);
+        }
+        
+    }
     
 
     return (
@@ -46,7 +69,8 @@ const AuthProvider = ({children}) => {
             value={{
                 setAuth,
                 auth,
-                cargando
+                cargando,
+                autenticar
             }}
         >
             {children}

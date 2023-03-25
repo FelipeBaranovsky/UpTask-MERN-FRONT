@@ -15,7 +15,7 @@ const Login = () => {
     const [password, setPassword] = useState('')
     const [alerta,setAlerta] = useState({})
 
-    const {setAuth} = useAuth()
+    const {setAuth, autenticar} = useAuth()
 
     const navigate = useNavigate()
 
@@ -44,6 +44,15 @@ const Login = () => {
         }
         cambioPassword()
       }, [])
+
+      useEffect(() => {
+        try {
+            autenticar()
+        } catch (error) {
+            console.log(error);
+        }
+      }, [])
+      
     
       const handleSubmit = async (e) => {
             e.preventDefault()

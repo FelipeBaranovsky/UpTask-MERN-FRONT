@@ -1,6 +1,9 @@
 import { useState, useEffect, createContext } from "react";
 import clienteAxios from "../config/clienteAxios"
 import { useNavigate } from "react-router-dom";
+import io from 'socket.io-client'
+
+let socket;
 
 const ProyectosContext = createContext()
 
@@ -16,6 +19,8 @@ const ProyectosProvider = ({children}) => {
     const [modalEliminarTarea, setModalEliminarTarea] = useState(false)
     const [colaborador, setColaborador] = useState({})
     const [modalEliminarColaborador, setModalEliminarColaborador] = useState(false)
+    const [buscador, setBuscador] = useState(false)
+
 
 
     const navigate = useNavigate()
@@ -42,6 +47,11 @@ const ProyectosProvider = ({children}) => {
         obtenerProyectos()
       
     }, [])
+
+    //Establecer com
+    useEffect(() => {
+        socket = io(import.meta.env.VITE_BACKEND_URI)
+      }, [])
     
     const handleCargando = () => {
         setCargando(!cargando)
@@ -202,9 +212,7 @@ const ProyectosProvider = ({children}) => {
                 }
             }
             const {data} = await clienteAxios.post(`/tareas`, tarea, config) 
-            const proyectoActualizado = {...proyecto}
-            proyectoActualizado.tareas = [...proyecto.tareas,data]
-            setProyecto(proyectoActualizado)
+
             setAlerta({
                 msg: "Tarea creada Correctamente",
                 error: false
@@ -214,6 +222,9 @@ const ProyectosProvider = ({children}) => {
                 setAlerta({})
                 setModalFormularioTarea(false)
             }, 2000);
+
+            //SocketIO
+            socket.emit('nueva tarea', data)
 
         } catch (error) {
             setAlerta({
@@ -238,10 +249,10 @@ const ProyectosProvider = ({children}) => {
                 }
             }
             const {data} = await clienteAxios.put(`/tareas/${tarea.id}`, tarea, config) 
-            const proyectoActualizado = {...proyecto}
-            proyectoActualizado.tareas = proyectoActualizado.tareas.map(tareaState => tareaState._id === data._id ? data : tareaState)
-            setProyecto(proyectoActualizado)
             handleModalTarea()
+
+            //SOCKET
+            socket.emit('editar tarea', data)
 
         } catch (error) {
             setAlerta({
@@ -276,14 +287,14 @@ const ProyectosProvider = ({children}) => {
                 }
             }
             const {data} = await clienteAxios.delete(`/tareas/${tarea._id}`, config) 
-            mostrarAlerta({
-                msg: data.msg,
-                error: false
-            })
-            const proyectoActualizado = {...proyecto}
-            proyectoActualizado.tareas = proyectoActualizado.tareas.filter(tareaState => tareaState._id !== tarea._id)
-            setProyecto(proyectoActualizado)
+            
+            
+            //SOCKET
+            socket.emit('eliminar tarea', tarea)
+
             setModalEliminarTarea(false)
+            setTarea({})
+            
         } catch (error) {
             console.log(error);
         }
@@ -385,15 +396,45 @@ const ProyectosProvider = ({children}) => {
                 }
             }
             const {data} = await clienteAxios.post(`/tareas/estado/${id}`, {}, config) 
-            const proyectoActualizado = {...proyecto}
-            proyectoActualizado.tareas = proyectoActualizado.tareas.map(tareaState => tareaState._id === data._id ? data : tareaState)
-            setProyecto(proyectoActualizado)
+            
+            //SOCKET
+            socket.emit('cambiar estado', data)
+
             setTarea({})
             setAlerta({})
 
         } catch (error) {
             console.log(error.response);
         }
+    }
+
+    const handleBuscador = () => {
+        setBuscador(!buscador)
+    }
+
+    //SocketIO
+    const submitTareasProyecto = (tarea) => {
+        const proyectoActualizado = {...proyecto}
+        proyectoActualizado.tareas = [...proyectoActualizado.tareas,tarea]
+        setProyecto(proyectoActualizado)
+    }
+
+    const submitEliminarTareas = (tarea) => {
+        const proyectoActualizado = {...proyecto}
+        proyectoActualizado.tareas = proyectoActualizado.tareas.filter(tareaState => tareaState._id !== tarea._id)
+        setProyecto(proyectoActualizado)
+    }
+
+    const submitEditarTareas = (tarea) => {
+        const proyectoActualizado = {...proyecto}
+        proyectoActualizado.tareas = proyectoActualizado.tareas.map(tareaState => tareaState._id === tarea._id ? tarea : tareaState)
+        setProyecto(proyectoActualizado)
+    }
+
+    const submitCambiarEstado = (tarea) => {
+        const proyectoActualizado = {...proyecto}
+        proyectoActualizado.tareas = proyectoActualizado.tareas.map(tareaState => tareaState._id === tarea._id ? tarea : tareaState)
+        setProyecto(proyectoActualizado)
     }
 
     return (
@@ -424,7 +465,13 @@ const ProyectosProvider = ({children}) => {
                 modalEliminarColaborador,
                 handleModalEliminarColaborador,
                 eliminarColaborador,
-                completarTarea
+                completarTarea,
+                handleBuscador,
+                buscador,
+                submitTareasProyecto,
+                submitEliminarTareas,
+                submitEditarTareas,
+                submitCambiarEstado
             }}
         >{children}
         </ProyectosContext.Provider>
