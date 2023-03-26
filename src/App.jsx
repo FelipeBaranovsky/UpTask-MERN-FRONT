@@ -34,10 +34,6 @@ function App() {
               <Route path="nuevo-colaborador/:id" element={<NuevoColaborador/>} />
               <Route path=":id" element={<Proyecto/>} />
               <Route path="editar/:id" element={<EditarProyecto/>} />
-
-
-
-
             </Route>
 
           </Routes>

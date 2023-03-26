@@ -2,6 +2,7 @@ import { useState, useEffect, createContext } from "react";
 import clienteAxios from "../config/clienteAxios"
 import { useNavigate } from "react-router-dom";
 import io from 'socket.io-client'
+import useAuth from "../hooks/useAuth";
 
 let socket;
 
@@ -24,6 +25,7 @@ const ProyectosProvider = ({children}) => {
 
 
     const navigate = useNavigate()
+    const {auth} = useAuth()
 
     useEffect(() => {
         const obtenerProyectos = async () => {
@@ -44,15 +46,16 @@ const ProyectosProvider = ({children}) => {
                 console.log(error);
             }
         }
+        
         obtenerProyectos()
       
-    }, [])
+    }, [auth])
 
     //Establecer com
     useEffect(() => {
         socket = io(import.meta.env.VITE_BACKEND_URI)
       }, [])
-    
+
     const handleCargando = () => {
         setCargando(!cargando)
     }
@@ -437,6 +440,22 @@ const ProyectosProvider = ({children}) => {
         setProyecto(proyectoActualizado)
     }
 
+    const cerrarSesionProyectos = () => {
+        setProyectos([])
+        setProyecto({})
+        setAlerta({})
+        setCargando(false)
+        setCargandoColab(false)
+        setTarea({})
+        setColaborador({})
+        setBuscador(false)
+        setModalEliminarColaborador(false)
+        setModalEliminarTarea(false)
+        setModalFormularioTarea(false)
+
+   
+    }
+
     return (
         <ProyectosContext.Provider
             value={{
@@ -471,7 +490,8 @@ const ProyectosProvider = ({children}) => {
                 submitTareasProyecto,
                 submitEliminarTareas,
                 submitEditarTareas,
-                submitCambiarEstado
+                submitCambiarEstado,
+                cerrarSesionProyectos
             }}
         >{children}
         </ProyectosContext.Provider>
